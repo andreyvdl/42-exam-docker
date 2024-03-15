@@ -1,7 +1,6 @@
 FROM ubuntu:20.04
 
-# edit this to have a folder with your login in /home
-ENV YOUR_LOGIN "marvin"
+ARG YOUR_LOGIN
 
 RUN apt update && apt install -y \
   build-essential \

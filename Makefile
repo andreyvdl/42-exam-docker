@@ -1,11 +1,14 @@
 all: up
+	@if ! ls | grep backup; then \
+		mkdir backup; \
+	fi
 .PHONY: all
 
 up:
 	@if ! docker images -a | grep -q exam; then \
-		docker build -t exam .; \
+		docker build --build-arg YOUR_LOGIN=$(grep YOUR_LOGIN .env | cut -d '=' -f2) -t exam .; \
 	fi
-	@docker run -it exam
+	@docker run -it exam 
 .PHONY: up
 
 down:
