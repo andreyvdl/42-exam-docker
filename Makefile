@@ -1,21 +1,19 @@
 LOGIN=$(shell grep YOUR_LOGIN .env | cut -d '=' -f2)
+X11=/tmp/.X11-unix
 
 up: build
-	@docker run -it -v exam-backup:/home/${LOGIN}/42_EXAM exam
+	@docker run -it \
+	-e DISPLAY=${DISPLAY} \
+	-v ${X11}:${X11} \
+	--name EXAM_CONTAINER \
+	exam
 .PHONY: up
 
+enter:
+	@docker exec -it EXAM_CONTAINER bash
+.PHONY: enter
+
 build:
-	@if [ ! -d "./backup" ]; then \
-		mkdir -p backup; \
-	fi
-	@if ! docker volume ls | grep 'exam-backup'; then \
-		docker volume create \
-		--driver local \
-		-o o=bind \
-		-o type=none \
-		-o device=$(shell pwd)/backup \
-		exam-backup; \
-	fi
 	@if ! docker images -a | grep -q exam; then \
 		docker build --build-arg YOUR_LOGIN=$(LOGIN) -t exam . --no-cache; \
 	fi
@@ -29,10 +27,6 @@ down:
 
 prune: down
 	@docker system prune -fa
-	@if docker volume ls | grep 'exam-backup'; then \
-		docker volume rm exam-backup; \
-	fi
-	@rm -fr ./backup
 .PHONY: prune
 
 re: prune up
